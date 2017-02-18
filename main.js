@@ -13,15 +13,19 @@ let mainWindow;
 // Define global reference to the python server (which we'll start next).
 let server;
 
+// Start python server. 
+if (process.platform === 'win32') {
+	// If on Windows, use the batch command (py -3 ./server.py).
+	server = require('child_process').spawn('py', ['-3', '-m', 'pynetworktables2js', '--robot','roborio-2403-frc.local']);
+} else {
+	// Modded to support pyenv / virtualenv and it's python shims over the standard python (which would normally be 2.7 most of the time)
+	// If on unix-like/other OSes, use bash command (python ./server.py).
+	server = require('child_process').spawn('python', ['-m', 'pynetworktables2js', '--robot','roborio-2403-frc.local']);
+}
+
 function createWindow() {
-    // Start python server.
-    if (process.platform === 'win32') {
-        // If on Windows, use the batch command (py -3 ./server.py).
-        server = require('child_process').spawn('py', ['-3', '-m', 'pynetworktables2js']);
-    } else {
-        // If on unix-like/other OSes, use bash command (python3 ./server.py).
-        server = require('child_process').spawn('python3', ['-m', 'pynetworktables2js']);
-    }
+
+	console.log('\nTornado Server Initialized:  Creating Dashboard Window...\n')
 
 	// Create the browser window.
 	mainWindow = new BrowserWindow({
@@ -40,13 +44,8 @@ function createWindow() {
 	mainWindow.loadURL('http://localhost:8888');
 
 	// Once the python server is ready, load window contents.
-    // TODO: fix this abnomination
 	mainWindow.once('ready-to-show', function() {
-		mainWindow.loadURL('http://localhost:8888');
-		mainWindow.once('ready-to-show', function() {
-			// Once it has reloaded, show the window
-			mainWindow.show();
-		});
+		mainWindow.show();
 	});
 
     // Remove menu
@@ -61,9 +60,18 @@ function createWindow() {
 	});
 }
 
+// This function will be called upon app-ready.  After waiting for approximately
+// 1.5 seconds, this will initialize the driver station window.  This should give
+// proper time for the python tornado server to load and display the dashboard page.
+function waitForServer() {
+	console.log('\n\nWaiting for Python Tornado Server to finish loading...\n')
+	setTimeout(createWindow, 1500)
+}
+
 // This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-app.on('ready', createWindow);
+// initialization and is ready to create the dashboard window.
+// Window Creation will be delayed for python server initialization times
+app.on('ready', waitForServer);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
@@ -79,7 +87,7 @@ app.on('window-all-closed', function() {
 });
 
 app.on('quit', function() {
-    console.log('Application quit. Killing tornado server.');
+    console.log('\nApplication quit. Killing tornado server.');
 
     // Kill tornado server child process.
     server.kill('SIGINT');
