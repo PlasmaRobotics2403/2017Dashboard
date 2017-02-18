@@ -1,5 +1,9 @@
 // Define UI elements
 var ui = {
+	gear: {
+		angle: document.getElementById('gearAngle'),
+		distance: document.getElementById('gearDistance')
+	},
 	timer: document.getElementById('timer'),
 	robotState: document.getElementById('robot-state'),
 	gyro: {
@@ -51,47 +55,11 @@ function onValueChanged(key, value, isNew) {
 		value = false;
 	}
 
+
 	// This switch statement chooses which UI element to update when a NetworkTables variable changes.
 	switch (key) {
-		case '/SmartDashboard/drive/navx/yaw': // Gyro rotation
-			ui.gyro.val = value;
-			ui.gyro.visualVal = Math.floor(ui.gyro.val - ui.gyro.offset);
-			if (ui.gyro.visualVal < 0) { // Corrects for negative values
-				ui.gyro.visualVal += 360;
-			}
-			ui.gyro.arm.style.transform = ('rotate(' + ui.gyro.visualVal + 'deg)');
-			ui.gyro.number.innerHTML = ui.gyro.visualVal + 'º';
-			break;
-			// The following case is an example, for a robot with an arm at the front.
-			// Info on the actual robot that this works with can be seen at thebluealliance.com/team/1418/2016.
-		case '/SmartDashboard/arm/encoder':
-			// 0 is all the way back, 1200 is 45 degrees forward. We don't want it going past that.
-			if (value > 1140) {
-				value = 1140;
-			} else if (value < 0) {
-				value = 0;
-			}
-			// Calculate visual rotation of arm
-			var armAngle = value * 3 / 20 - 45;
-
-			// Rotate the arm in diagram to match real arm
-			ui.robotDiagram.arm.style.transform = 'rotate(' + armAngle + 'deg)';
-			break;
-			// This button is just an example of triggering an event on the robot by clicking a button.
-		case '/SmartDashboard/example_variable':
-			if (value) { // If function is active:
-				// Add active class to button.
-				ui.example.button.className = 'active';
-				ui.example.readout.innerHTML = 'Value is true';
-			} else { // Otherwise
-				// Take it off
-				ui.example.button.className = '';
-				ui.example.readout.innerHTML = 'Value is false';
-			}
-			break;
+		// Case to run dashboard countdown timer during match
 		case '/SmartDashboard/time_running':
-			// When this NetworkTables variable is true, the timer will start.
-			// You shouldn't need to touch this code, but it's documented anyway in case you do.
 			var s = 135;
 			if (value) {
 				// Make sure timer is reset to black when it starts
@@ -125,22 +93,23 @@ function onValueChanged(key, value, isNew) {
 			}
 			NetworkTables.setValue(key, false);
 			break;
-		case '/SmartDashboard/autonomous/options': // Load list of prewritten autonomous modes
-			// Clear previous list
-			while (ui.autoSelect.firstChild) {
-				ui.autoSelect.removeChild(ui.autoSelect.firstChild);
-			}
-			// Make an option for each autonomous mode and put it in the selector
-			for (i = 0; i < value.length; i++) {
-				var option = document.createElement('option');
-				option.innerHTML = value[i];
-				ui.autoSelect.appendChild(option);
-			}
-			// Set value to the already-selected mode. If there is none, nothing will happen.
-			ui.autoSelect.value = NetworkTables.getValue('/SmartDashboard/currentlySelectedMode');
+
+		// Robot Data Output
+
+		case '/vision/gearElevatorAngle':
+			ui.gear.angle.value = value + ' degrees'
 			break;
-		case '/SmartDashboard/autonomous/selected':
-			ui.autoSelect.value = value;
+		case '/vision/gearElevatorDistance':
+			ui.gear.distance.value = value + ' inches'
+			break;
+		case '/SmartDashboard/drive/navx/yaw': // Gyro rotation
+			ui.gyro.val = value;
+			ui.gyro.visualVal = Math.floor(ui.gyro.val - ui.gyro.offset);
+			if (ui.gyro.visualVal < 0) { // Corrects for negative values
+				ui.gyro.visualVal += 360;
+			}
+			ui.gyro.arm.style.transform = ('rotate(' + ui.gyro.visualVal + 'deg)');
+			ui.gyro.number.innerHTML = ui.gyro.visualVal + 'º';
 			break;
 	}
 
@@ -149,8 +118,8 @@ function onValueChanged(key, value, isNew) {
 	var propName = key.substring(16, key.length);
 	// Check if value is new and doesn't have a spot on the list yet
 	if (isNew && !document.getElementsByName(propName)[0]) {
-		// Make sure name starts with /SmartDashboard/. Properties that don't are technical and don't need to be shown on the list.
-		if (key.substring(0, 16) === '/SmartDashboard/') {
+		// Make sure name starts with /SmartDashboard/ or /vision/. Properties that don't are technical and don't need to be shown on the list.
+		if (key.substring(0, 16) === '/SmartDashboard/' || key.substring(0,8) === '/vision/') {
 			// Make a new div for this value
 			var div = document.createElement('div'); // Make div
 			ui.tuning.list.appendChild(div); // Add the div to the page
@@ -208,11 +177,43 @@ function onValueChanged(key, value, isNew) {
 	}
 }
 
-// The rest of the doc is listeners for UI elements being clicked on
-ui.example.button.onclick = function() {
-	// Set NetworkTables values to the opposite of whether button has active class.
-	NetworkTables.setValue('/SmartDashboard/example_variable', this.className != 'active');
-};
+// Set Default Values
+function set_default_values() {
+	ui.gear.distance.value = NetworkTables.getValue('/vision/gearElevatorDistance')
+	ui.gear.distance.angle = NetworkTables.getValue('/vision/gearElevatorAngle')
+}
+
+// Value Sending Functions
+
+// Push Gear Angle
+function sendGearAngle(angle) {
+	NetworkTables.setValue('/vision/gearElevatorAngle', angle)
+}
+
+// Push Gear Distance
+function sendGearDistance(distance) {
+	NetworkTables.setValue('/vision/gearElevatorDistance', distance)
+}
+
+// The rest of the doc is listeners for UI elements being clicked on or interacted with
+
+// RegEx Pattern for Number Detection
+var numberPatern = /\d+/g;
+
+// UI Gear Angle - set value on input change
+ui.gear.angle.addEventListener('input', function(evt) {
+	// Set Network Tables values to the given input value
+	value = this.value.match(numberPatern)[0]
+	sendGearAngle(value)
+});
+
+// UI Gear Distance - set value on input change
+ui.gear.distance.addEventListener('input', function(evt) {
+	// Set Network Tables values to the given input value
+	value = this.value.match(numberPatern)[0]
+	sendGearDistance(value)
+});
+
 
 // Reset gyro value to 0 on click
 ui.gyro.container.onclick = function() {

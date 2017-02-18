@@ -87,7 +87,7 @@ app.on('window-all-closed', function() {
 });
 
 app.on('quit', function() {
-    console.log('\nApplication quit. Killing tornado server.');
+    console.log('\nApplication quit. Killing Tornado Server.');
 
     // Kill tornado server child process.
     server.kill('SIGINT');
