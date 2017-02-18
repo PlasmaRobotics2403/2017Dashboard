@@ -3,6 +3,14 @@
     margin: 0;
     padding: 0;
 }
+@font-face {
+  font-family: 'PL_Eras';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Eras Bold ITC');
+  src: url("/fonts/ErasITC-Bold.eot");
+  src: url("/fonts/ErasITC-Bold.eot?#iefix") format("embedded-opentype"), url("/fonts/ErasITC-Bold.woff") format("woff"), url("/fonts/ErasITC-Bold.ttf") format("truetype"), url("/fonts/ErasITC-Bold.svg#ErasITC-Bold") format("svg");
+}
 ::-webkit-scrollbar {
     display: none;
 }
@@ -142,6 +150,7 @@ text {
     transform-origin: right;
 }
 #team {
+    font-family: "PL_Eras";
     font-size: 28px;
     letter-spacing: -1px;
 }
