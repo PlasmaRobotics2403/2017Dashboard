@@ -44,15 +44,7 @@ $('#camera').click(reloadCamera);
 
 $('#tuning-button-set').click(function() {
 	if ($('#tuning-name').val() && $('#tuning-value').val()) {
-		value = $('#tuning-value').val();
-
-		if (value == 'true') { // Convert value to boolean equivalent if appropriate
-			value = true; 
-		} else if (value == 'false') {
-			value = false;
-		}
-
-		NetworkTables.setValue($('#tuning-name').val, value)
+		NetworkTables.setValue($('#tuning-name').val, value = $('#tuning-value').val())
 	} else {
 		console.log('User attempted to set a NetworkTables value without a valid Key and Value.')
 	}
