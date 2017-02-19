@@ -183,6 +183,7 @@ input { /* Styles for input fields */
     font-size: 3em;
     letter-spacing: 8px;
     font-family: "PL_Eras", Arial, Helvetica, sans-serif;
+    transition: opacity 0.9s ease-in-out;
 }
 
 #bar-timer.warning {
@@ -245,6 +246,12 @@ input { /* Styles for input fields */
 
 #tuning {
     display: none;
+}
+
+#tuning-list {
+    height: calc(100vh - 235px);
+    margin-top: 15px;
+    overflow-y: scroll;
 }
 
 #panel-main.tuning {
