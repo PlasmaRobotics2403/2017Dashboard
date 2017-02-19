@@ -89,6 +89,7 @@ input, button { /* Styles for buttons */
 
 #bar-bottom-backdrop {
     bottom: 0;
+    height: 55px;
 }
 
 #bar-logo-container{
@@ -163,7 +164,8 @@ input, button { /* Styles for buttons */
     margin-right: auto;
     color: #0d0 !important;
     text-align: center;
-    font-size: 3.5em;
+    font-size: 3em;
+    letter-spacing: 8px;
     font-family: "PL_Eras", Arial, Helvetica, sans-serif;
 }
 
@@ -179,11 +181,11 @@ input, button { /* Styles for buttons */
 
 #content-container { /* Container that contains page content - seperate from top and bottom bars */
     position: relative;
-    width: 85vw;
-    height: calc(100vh - 190px);
+    width: calc(100vw - 40px);
+    height: calc(100vh - 160px);
     margin-left: auto;
     margin-right: auto;
-    margin-top: 95px;
+    margin-top: 85px;
 }
 
 #content-container > div {
@@ -191,29 +193,19 @@ input, button { /* Styles for buttons */
     background-color: white;
     padding: 15px;
     border-radius: 7.5px;
-}
-
-#panel-main, #panel-numerical {
-    height: calc((5 *(100vh - 190px))/8 - 10px);
+    height: 100%;
 }
 
 #panel-main {
     top: 0;
     left: 0;
-    width: calc((0.6 *85vw) - 10px);
+    width: calc((16/9) * (100vh - 160px));
 }
 
-#panel-numerical {
+#panel-data {
     top: 0;
     right: 0;
-    width: calc((0.4 *85vw) - 10px);
-}
-
-#panel-visual {
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: calc((3 * (100vh - 190px))/8 - 10px);
+    width: calc(100% - ((16/9) * (100vh - 160px)) - 20px);
 }
 
 
