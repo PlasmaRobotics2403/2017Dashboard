@@ -1,13 +1,11 @@
 'use strict';
 
 const electron = require('electron');
+
 // Module to control application life.
 const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
-
-// Load jQuery for use with window navigation
-let $ = require('jquery')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -37,7 +35,8 @@ function createWindow() {
 		// 1366x570 is a good standard height, but you may want to change this to fit your DriverStation's screen better.
 		// It's best if the dashboard takes up as much space as possible without covering the DriverStation application.
 		// The window is closed until the python server is ready
-		show: false
+		show: false,
+		frame: false,
 	});
 
 	// Move window to top (left) of screen.
@@ -61,8 +60,6 @@ function createWindow() {
 		// when you should delete the corresponding element.
 		mainWindow = null;
 	});
-
-	mainWindow.$ = $;
 }
 
 // This function will be called upon app-ready.  After waiting for approximately

@@ -24,6 +24,7 @@
         <div id='bar-bottom-container'> <!-- Botton Bar -->
             <div id='bar-bottom-backdrop' class='bar-backdrop'></div> <!-- Menu Backdrop -->
             <div id='bar-timer' class=''>0:00</div> <!-- Timer -->
+            <div id='bar-close'>X</div>
         </div>
 
         <!-- Dashboard Content -->
@@ -32,10 +33,15 @@
             <div id='panel-main' class=''>
                 <div id='camera'></div>
                 <div id='tuning'>
-                    <input id="tuning-name"type="text" placeholder="Property">
-                    <input id="tuning-value"type="text" placeholder="Value">
-                    <div id="tuning-button-set">Set</div>
-                    <div id="tuning-button-get">Get</div>
+                    <div id='tuning-controls'>
+                        <input id="tuning-name" type="text" placeholder="Property">
+                        <input id="tuning-value" type="text" placeholder="Value">
+                        <div id="tuning-button-set"><p>Set</p></div>
+                        <div id="tuning-button-get"><p>Get</p></div>
+                    </div>
+                    <div id='tuning-list'>
+                        <!-- Script will automatically feed in tuning controls here for important network tables -->
+                    </div>
                 </div>
             </div>
 
@@ -53,6 +59,10 @@
 
         <!-- Dashboard Javascript -->
         <script src="/networktables/networktables.js"></script> <!-- Network Tables Integration -->
+        <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script> <!-- Prep Electron for jQuery import -->
+        <script src="jquery.min.js"></script> <!-- jQuery:  Because jQuery -->
+        <script src="ui.js"></script> <!-- Custom Scripts to connect to bot and SmartDashboard network tables -->
+    <script>if (window.module) module = window.module;</script> <!-- Reset Electron / jQuery Conflicts -->
     </body>
 
 </html>

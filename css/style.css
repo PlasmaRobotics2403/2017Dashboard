@@ -22,9 +22,10 @@ body, html { /* Default Styles for page to ensure proper rendering */
     font-family: Arial, Helvetica, sans-serif;
 }
 
-input, button { /* Styles for buttons */
+input { /* Styles for input fields */
     display: block;
     width: 100%;
+    height: 26px;
     color: white;
     background: #111;
     border-radius: 5px;
@@ -49,6 +50,15 @@ input, button { /* Styles for buttons */
     src: url("/fonts/ErasITC-Bold.eot");
     src: url("/fonts/ErasITC-Bold.eot?#iefix") format("embedded-opentype"), url("/fonts/ErasITC-Bold.woff") format("woff"), url("/fonts/ErasITC-Bold.ttf") format("truetype"), url("/fonts/ErasITC-Bold.svg#ErasITC-Bold") format("svg");
 }
+
+
+
+/* Animations */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg); }
+  to {
+    transform: rotate(360deg); } }
 
 
 
@@ -102,7 +112,7 @@ input, button { /* Styles for buttons */
   margin-left: 50vw;
   height: 90px;
   width: 90px;
-  background-color: #bebebe;
+  background-color: #cbcbcb;
   border-radius: 50%;
   -webkit-box-shadow: 0px 0px 27px 0px rgba(0,0,0,0.2);
   -moz-box-shadow: 0px 0px 27px 0px rgba(0,0,0,0.2);
@@ -120,7 +130,10 @@ input, button { /* Styles for buttons */
   background-position: center center;
   background-repeat: no-repeat;
   transform-origin: 50% 50%;
-  transition: transform 750ms ease-in-out;
+  animation-name: rotate !important;
+  animation-duration: 15.2403s !important;
+  animation-iteration-count: infinite !important;
+  animation-timing-function: linear !important;
 }
 
 .bar-indicator {
@@ -152,6 +165,8 @@ input, button { /* Styles for buttons */
 
 #bar-tuning {
     right: 25px;
+    -webkit-app-region: no-drag;
+    cursor: pointer;
 }
 
 #bar-timer {
@@ -177,8 +192,26 @@ input, button { /* Styles for buttons */
     color: #d00 !important;
 }
 
-/* Content */
+#bar-close {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    height: 35px;
+    width: 35px;
+    z-index: 102;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #7B3188; 
+    border-radius: 7.5px;
+    color: #7B3188;
+    text-align: center;
+    line-height: 33px;
+    font-size: 1.25em;
+    font-family: "PL_Eras", Arial, Helvetica, sans-serif;
+    cursor: pointer;
+}
 
+/* Content */
 #content-container { /* Container that contains page content - seperate from top and bottom bars */
     position: relative;
     width: calc(100vw - 40px);
@@ -197,6 +230,7 @@ input, button { /* Styles for buttons */
 }
 
 #panel-main {
+    padding: 0 !important;
     top: 0;
     left: 0;
     width: calc((16/9) * (100vh - 160px));
@@ -208,6 +242,67 @@ input, button { /* Styles for buttons */
     width: calc(100% - ((16/9) * (100vh - 160px)) - 20px);
 }
 
+#tuning {
+    display: none;
+}
+
+#panel-main.tuning {
+    padding: 15px !important;
+}
+
+#panel-main.tuning > #tuning {
+    display: initial;
+}
+
+#panel-main.tuning > #camera {
+    display: none
+}
+
+/* Tuning Controls */
+#tuning-controls > * {
+    margin: 0 !important;
+}
+
+#tuning-controls > input {
+    display: inline-block;
+    width: calc(((100% - 90px)/2) - 5px);
+    margin-right: 3px;
+}
+
+#tuning-controls > div {
+    position: absolute;
+    top: 15px;
+    height: 26px;
+    width: 40px;
+    background-color: #000;
+    text-align: center;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #7B3188; 
+    border-radius: 5px;
+    line-height: 20px;
+    color: #7B3188;
+    cursor: pointer;
+}
+
+#tuning-button-set {
+    right: 62.5px;
+}
+
+#tuning-button-get {
+    right: 15px;
+}
+
+#tuning-controls > div > p {
+    margin-top: 2px;
+}
 
 
 /* Dashboard Modules */
+
+#camera { /* MJPG Camera Window */
+    height: 100%;
+    width: 100%;
+    background-color: black;
+    border-radius: 7.5px;
+}
