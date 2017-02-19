@@ -6,6 +6,9 @@ const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
+// Load jQuery for use with window navigation
+let $ = require('jquery')
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
@@ -58,6 +61,8 @@ function createWindow() {
 		// when you should delete the corresponding element.
 		mainWindow = null;
 	});
+
+	mainWindow.$ = $;
 }
 
 // This function will be called upon app-ready.  After waiting for approximately
