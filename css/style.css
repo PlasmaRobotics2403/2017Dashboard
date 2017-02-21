@@ -194,10 +194,9 @@ input { /* Styles for input fields */
     color: #d00 !important;
 }
 
-#bar-close {
+#bar-close, #bar-reload, #bar-position {
     position: fixed;
     bottom: 10px;
-    right: 10px;
     height: 35px;
     width: 35px;
     z-index: 102;
@@ -207,10 +206,24 @@ input { /* Styles for input fields */
     border-radius: 7.5px;
     color: #7B3188;
     text-align: center;
+    font-size: 1.2em;
     line-height: 33px;
-    font-size: 1.25em;
     font-family: "PL_Eras", Arial, Helvetica, sans-serif;
     cursor: pointer;
+}
+
+#bar-close {
+    right: 10px;
+    font-size: 1.6em;
+    line-height: 1.25em;
+}
+
+#bar-reload {
+    right: 55px;
+}
+
+#bar-position {
+    right: 100px;
 }
 
 /* Content */

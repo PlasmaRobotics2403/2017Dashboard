@@ -1,9 +1,10 @@
 // Dashboard Javascript - Written by Members of FRC Team 2403, although based heavily on code by FRC Team 1418
 
 //Imports
-const electron = require('electron')
-const electron_remote = electron.remote
-const electron_app = electron_remote.app
+const electron = require('electron');
+const electron_remote = electron.remote;
+const electron_app = electron_remote.app;
+const BrowserWindow = electron_remote.BrowserWindow;
 
 
 // Better Prototypes & Helper Functions
@@ -21,38 +22,52 @@ String.prototype.replaceAll = function(search, replacement) {
 // Default Value Setting
 
 // Load Camera Module
-cameraURL = "url('roborio-2403-frc.local:5800/?action=stream')"
+cameraURL = "url('roborio-2403-frc.local:5800/?action=stream')";
 function reloadCamera() {
 	camera = $('#camera')
-	camera.css('background-image', 'none')
-	camera.css('background-image', cameraURL)
+	camera.css('background-image', 'none');
+	camera.css('background-image', cameraURL);
 }
-setTimeout(reloadCamera, 1000)
+setTimeout(reloadCamera, 1000);
 
 
 // Interaction Hooks for Elements
 
 $('#bar-close').click(function() {
-	electron_app.quit()
+	electron_app.quit();
+});
+
+$('#bar-reload').click(function() {
+	electron_app.relaunch();
+	electron_app.quit();
+});
+
+$('#bar-position').click(function() {
+	current_window = electron_remote.getGlobal('mainWindow')
+	console.log(current_window.id)
+	display_width = electron.screen.getPrimaryDisplay().size.width
+	current_window.setBounds({x: 0, y: 0, width: display_width, height: 528}, true)
+	//current_window.setPosition(0,0,true)
+	//current_window.setSize(display_width, 528, true)
 });
 
 $('#bar-tuning').click(function() {
-	$('#panel-main').toggleClass('tuning')
+	$('#panel-main').toggleClass('tuning');
 });
 
 $('#camera').click(reloadCamera);
 
 $('#tuning-button-set').click(function() {
 	if ($('#tuning-name').val() && $('#tuning-value').val()) {
-		NetworkTables.setValue($('#tuning-name').val, value = $('#tuning-value').val())
+		NetworkTables.setValue($('#tuning-name').val, value = $('#tuning-value').val());
 	} else {
-		console.log('User attempted to set a NetworkTables value without a valid Key and Value.')
+		console.log('User attempted to set a NetworkTables value without a valid Key and Value.');
 	}
 });
 
 $('#tuning-button-get').click(function() {
 	if ($('#tuning-name').val()) {
-		$('#tuning-value').val(NetworkTables.getValue($('#tuning-name').val()))
+		$('#tuning-value').val(NetworkTables.getValue($('#tuning-name').val()));
 	}
 });
 
@@ -140,6 +155,21 @@ function onKeyValueChanged(key, value, isNew) {
 		
 		// Gear Vision Distance
 		case '/vision/gearElevatorDistance':
+			break;
+
+
+		// Shooter Angle
+		case '/vision/shooterAngle':
+			break;
+
+
+		// Shooter Distance
+		case '/vision/shooterDistance':
+			break;
+
+
+		// Shooter Velocity
+		case '/vision/shooterVelocity':
 			break;
 
 	}

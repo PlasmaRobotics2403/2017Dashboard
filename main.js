@@ -32,9 +32,6 @@ function createWindow() {
 	mainWindow = new BrowserWindow({
 		width: 1366,
 		height: 528,
-		// 1366x570 is a good standard height, but you may want to change this to fit your DriverStation's screen better.
-		// It's best if the dashboard takes up as much space as possible without covering the DriverStation application.
-		// The window is closed until the python server is ready
 		show: false,
 		frame: false,
 	});
@@ -60,6 +57,8 @@ function createWindow() {
 		// when you should delete the corresponding element.
 		mainWindow = null;
 	});
+
+	return mainWindow;
 }
 
 // This function will be called upon app-ready.  After waiting for approximately
@@ -67,13 +66,21 @@ function createWindow() {
 // proper time for the python tornado server to load and display the dashboard page.
 function waitForServer() {
 	console.log('\n\nWaiting for Python Tornado Server to finish loading...\n')
-	setTimeout(createWindow, 1500)
+	setTimeout(function() {
+		mainWindow = createWindow();
+		global.mainWindow = mainWindow;
+		mainWindow.setBounds({x: 0, y: 0, width: electron.screen.getPrimaryDisplay().size.width, height: 528}, true)
+	}, 1500)
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create the dashboard window.
 // Window Creation will be delayed for python server initialization times
-app.on('ready', waitForServer);
+app.on('ready', function() {
+	waitForServer();
+	global.powerBlocker = electron.powerSaveBlocker.start('prevent-display-sleep');
+
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
@@ -90,6 +97,7 @@ app.on('window-all-closed', function() {
 
 app.on('quit', function() {
     console.log('\nApplication quit. Killing Tornado Server.');
+	powerSaveBlocker.stop(global.powerBlocker)
 
     // Kill tornado server child process.
     server.kill('SIGINT');
