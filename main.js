@@ -97,7 +97,7 @@ app.on('window-all-closed', function() {
 
 app.on('quit', function() {
     console.log('\nApplication quit. Killing Tornado Server.');
-	powerSaveBlocker.stop(global.powerBlocker)
+	electron.powerSaveBlocker.stop(global.powerBlocker)
 
     // Kill tornado server child process.
     server.kill('SIGINT');

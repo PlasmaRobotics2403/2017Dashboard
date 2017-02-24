@@ -18,6 +18,9 @@ String.prototype.replaceAll = function(search, replacement) {
     return target.replace(new RegExp(escapeRegExp(search), 'g'), replacement);
 };
 
+Number.prototype.map = function (in_min, in_max, out_min, out_max) { // Map values from one range to another
+  return (this - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 // Default Value Setting
 
@@ -44,7 +47,6 @@ $('#bar-reload').click(function() {
 
 $('#bar-position').click(function() {
 	current_window = electron_remote.getGlobal('mainWindow')
-	console.log(current_window.id)
 	display_width = electron.screen.getPrimaryDisplay().size.width
 	current_window.setBounds({x: 0, y: 0, width: display_width, height: 528}, true)
 	//current_window.setPosition(0,0,true)
@@ -59,7 +61,7 @@ $('#camera').click(reloadCamera);
 
 $('#tuning-button-set').click(function() {
 	if ($('#tuning-name').val() && $('#tuning-value').val()) {
-		NetworkTables.setValue($('#tuning-name').val, value = $('#tuning-value').val());
+		NetworkTables.setValue($('#tuning-name').val(), $('#tuning-value').val());
 	} else {
 		console.log('User attempted to set a NetworkTables value without a valid Key and Value.');
 	}
@@ -70,6 +72,120 @@ $('#tuning-button-get').click(function() {
 		$('#tuning-value').val(NetworkTables.getValue($('#tuning-name').val()));
 	}
 });
+
+
+// Widget Loading and Registry
+
+var widgets = [] // Array to store parsed widget information
+
+// Gauge Widget
+setTimeout(function() { $('.widget-gauge').each(function() {
+
+	// Pull data about widget
+	var address = $(this).attr('data-address');
+	var bottom = $(this).attr('data-bottom');
+	var top = $(this).attr('data-top');
+
+	// Fix Network Tables path if incorrectly formatted
+	if (!address.startsWith('/')) {
+		address = '/' + address;
+	}
+
+	// If top and bottom not defined, set at default values
+	if (bottom === undefined) {
+		bottom = -1;
+	}
+
+	if (top === undefined) {
+		top = 1;
+	}
+
+	// Create inner DIV
+	var inner = $('<div class=\'widget-gauge-bar\'></div>'); // Create Numerical bar object
+
+	// Get initial value of Network Tables Field
+	var network_value = NetworkTables.getValue(address);
+
+	// Initialize Content based on Network Tables Return
+	if (network_value === undefined) {
+		inner.css('width', '50%'); // Set Failure Width to 50%
+	} else {
+		var raw_position = parseFloat(network_value)
+		var percent_position = percent_position.map(parseFloat(bottom), parseFloat(top), 0, 100);
+
+		if (percent_position > 100) {
+			percent_position = 100;
+		} else if (percent_position < 0) {
+			percent_position = 0;
+		}
+
+		inner.css('width', percent_position + '%')
+	}
+
+	// Append inner to DOM objefct
+	$(this).append(inner);
+
+	// Create Marker for showing Zero position
+	var tick = $('<div class=\'widget-gauge-tick\'></div>'); 
+
+	// Format Marker depending on position of 0 within defined axis
+	var num_tick_pos = 0;
+	var act_tick_pos = num_tick_pos.map(parseFloat(bottom), parseFloat(top), 0, 100);
+
+	// Append Marker only if it is within the range of the axis
+	if (act_tick_pos > 0 && act_tick_pos < 100) {
+		tick.css('left', act_tick_pos + '%');
+		$(this).append(tick);
+	}
+
+	// Assemble Widget Data Array
+	var data = {
+		object: $(this),
+		address: address,
+		type: 'gauge',
+		lower: parseFloat(bottom),
+		upper: parseFloat(top)
+	};
+
+	// Push widget to Widget Array
+	if (!(address === undefined)) {
+		widgets[address] = data;
+	}
+}); }, 250);
+
+// Field Widget
+setTimeout(function() { $('.widget-field').each(function() {
+
+	// Pull data about widget
+	var address = $(this).attr('data-address');
+	var type = $(this).attr('type');
+
+	// Set placeholder to undefined in case of no value from Network Tables
+	$(this).attr('placeholder', 'undefined'); 
+
+	// Get default NetworkTables value
+	var network_value = NetworkTables.getValue(address);
+
+	// Set inital value of field based on Network Tables value
+	if (type === 'number') {
+		$(this).val(parseFloat(network_value));
+	} else {
+		$(this).val(network_value);
+	}
+
+	// Assemble Widget Data Array
+	var data = {
+		object: $(this),
+		address: address,
+		type: 'field-' + type
+	}
+
+	// Push widget to Widget Array
+	if (!(address === undefined) && (type === 'text' || type === 'number')) {
+		widgets[address] = data;
+	}
+
+}); }, 250);
 
 
 // Network Tables 
@@ -172,6 +288,26 @@ function onKeyValueChanged(key, value, isNew) {
 		case '/vision/shooterVelocity':
 			break;
 
+
+		default:
+			if (key in widgets) {
+				var widgetInformation = widgets[key]
+
+				switch(widgetInformation.type){
+					case 'gauge':
+						var raw_position = parseFloat(value)
+						var percent_position = raw_position.map(widgetInformation.lower, widgetInformation.upper, 0, 100);
+						
+						if (percent_position > 100) {
+							percent_position = 100;
+						} else if (percent_position < 0) {
+							percent_position = 0;
+						}
+
+						widgetInformation.object.find('.widget-gauge-bar').css('width', percent_position + '%');
+					break;
+				}
+			}
 	}
 
 	// Tuning - other network Tables values

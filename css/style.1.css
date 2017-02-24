@@ -29,9 +29,14 @@ select {
     background: #444;
     border: none;
     font-size: 14px;
+    text-align: center;
     padding: 6px 8px;
     cursor: pointer;
     outline: 0;
+}
+
+input[type="text"]::-webkit-input-placeholder, input[type="number"]::-webkit-input-placeholder {
+    text-align: center;    
 }
 
 
