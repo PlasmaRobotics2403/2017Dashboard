@@ -53,6 +53,11 @@ $('#bar-position').click(function() {
 	//current_window.setSize(display_width, 528, true)
 });
 
+$('#bar-developer').click(function() {
+	current_window = electron_remote.getGlobal('mainWindow')
+	current_window.toggleDevTools();
+});
+
 $('#bar-tuning').click(function() {
 	$('#panel-main').toggleClass('tuning');
 });

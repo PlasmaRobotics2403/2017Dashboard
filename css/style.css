@@ -195,7 +195,7 @@ input[type="text"], input[type="number"] { /* Styles for input fields */
     color: #d00 !important;
 }
 
-#bar-close, #bar-reload, #bar-position {
+#bar-close, #bar-reload, #bar-position, #bar-developer {
     position: fixed;
     bottom: 10px;
     height: 35px;
@@ -225,6 +225,14 @@ input[type="text"], input[type="number"] { /* Styles for input fields */
 
 #bar-position {
     right: 100px;
+}
+
+#bar-reload {
+    right: 55px;
+}
+
+#bar-developer {
+    right: 145px;
 }
 
 /* Content */
