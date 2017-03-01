@@ -25,7 +25,7 @@ Number.prototype.map = function (in_min, in_max, out_min, out_max) { // Map valu
 // Default Value Setting
 
 // Load Camera Module
-cameraURL = "url('roborio-2403-frc.local:5800/?action=stream')";
+cameraURL = "url('roborio-2403-frc.local:1181/stream.mjpg')";
 function reloadCamera() {
 	camera = $('#camera')
 	camera.css('background-image', 'none');
@@ -305,7 +305,11 @@ function onKeyValueChanged(key, value, isNew) {
 						}
 
 						widgetInformation.object.find('.widget-gauge-bar').css('width', percent_position + '%');
-					break;
+						break;
+					
+					case 'field': 
+						
+						break;
 				}
 			}
 	}
