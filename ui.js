@@ -25,7 +25,7 @@ Number.prototype.map = function (in_min, in_max, out_min, out_max) { // Map valu
 // Default Value Setting
 
 // Load Camera Module
-cameraURL = "url('roborio-2403-frc.local:1181/stream.mjpg')";
+cameraURL = "url('http://roborio-2403-frc.local:1181/stream.mjpg')";
 function reloadCamera() {
 	camera = $('#camera')
 	camera.css('background-image', 'none');
