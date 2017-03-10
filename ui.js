@@ -25,7 +25,7 @@ Number.prototype.map = function (in_min, in_max, out_min, out_max) { // Map valu
 // Default Value Setting
 
 // Load Camera Module
-cameraURL = "url('10.24.3.2:1182/stream.mjpg')";
+cameraURL = "url('10.24.3.2:1181/stream.mjpg')";
 function reloadCamera() {
 	camera = $('#camera')
 	camera.css('background-image', 'none');
