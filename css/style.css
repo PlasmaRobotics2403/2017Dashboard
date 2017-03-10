@@ -396,6 +396,7 @@ p { /* Default Paragraph Styles */
     background-size: 100% 100%;
     background-position: center center;
     background-repeat: no-repeat;
+    transform: rotateZ(180deg);
 }
 
 .group-2, .group-3, .group-4 {
