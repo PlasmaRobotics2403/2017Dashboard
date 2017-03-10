@@ -17,11 +17,11 @@ let server;
 // Start python server. 
 if (process.platform === 'win32') {
 	// If on Windows, use the batch command (py -3 ./server.py).
-	server = require('child_process').spawn('py', ['-3', '-m', 'pynetworktables2js', '--robot','roborio-2403-frc.local']);
+	server = require('child_process').spawn('py', ['-3', '-m', 'pynetworktables2js', '--robot','10.24.3.2.local']);
 } else {
 	// Modded to support pyenv / virtualenv and it's python shims over the standard python (which would normally be 2.7 most of the time)
 	// If on unix-like/other OSes, use bash command (python ./server.py).
-	server = require('child_process').spawn('python', ['-m', 'pynetworktables2js', '--robot','roborio-2403-frc.local']);
+	server = require('child_process').spawn('python', ['-m', 'pynetworktables2js', '--robot','10.24.3.2.local']);
 }
 
 function createWindow() {
