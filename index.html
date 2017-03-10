@@ -51,11 +51,100 @@
 
             <!-- Content Panel: Numerical Readouts & Inputs -->
             <div id='panel-data'>
-                <div id='outputs'> <!-- Outputs situated above inputs -->
-                    <div data-address='/testing/axis' data-bottom='-1' data-top='1' class='widget-gauge'></div>
+                <!--
+                <div id='outputs'> <!-- Outputs situated above inputs --><!--
+                    <div data-address='/SmartDashboard/test' data-bottom='-180' data-top='180' class='widget-gauge'></div>
+                    <div data-address='/testing/bool' class='widget-boolean'></div>
                 </div>
-                <div id='inputs'> <!-- Inputs situated below outputs -->
-                    <input data-address='/testing/field' type='text' class='widget-field'></input>
+                <div id='inputs'> <!-- Inputs situated below outputs --><!--
+                    <input data-address='/SmartDashboard/wanted RPM' type='text' class='widget-field'></input>
+                    <input data-address='/testing/num' type='number' class='widget-field'></input>
+                    <input data-address='/testing/check' type='checkbox' class='widget-field'></input>
+
+                    <!-- actual stuff, need to format --><!--
+                    <p> gear angle adjustment from gyro </p>
+                    <input data-address='/vision/gearPhotoAngle' type='number' class='widget-field'></input>
+
+                    <p> shooter angle adjust from encoders </p>
+                    <input data-address='/vision/fuelPhotoAngle' type='number' class='widget-field'></input>
+
+                    <p> multiplier RPM </p>
+                    <input data-address='/vision/shootRPMAdjustment' type='number' class='widget-field'></input>
+
+                    <p> shooter angle adj (pix) </p>
+                    <input data-address='/vision/shootAngleAdjustment' type='number' class='widget-field'></input>
+                </div>-->
+                <div id='panel-top'>
+                    <p>Autonomous Selection</p>
+                    <input data-address='/dashboard/auto' type='number' class='widget-field' data-default='0'></input>
+                    <!--<select id='autonomous' data-address='/dasboard/auto' class='widget-select'>
+                        <option value='0' selected>testing</option>
+                        <option value='1'>second thing</option>
+                        <option value='2'>third thing</option>
+                        <option value='3'>fourth thing</option>
+                    </select>-->
+                </div>
+                <div id='panel-column-1'>
+                    <div class='group-2'>
+                        <div class='group-inner'>
+                            <p>Gyro Angle</p>
+                            <div data-address='/dashboard/gyro' class='widget-spin' data-bottom='-180' data-top='180'></div>
+                        </div>
+                        <div class='group-inner'>
+                            <p>Shooter Angle</p>
+                            <div data-address='/vision/shooterAngle' class='widget-spin' data-bottom='-180' data-top='180'></div>
+                        </div>
+                    </div>
+                    <div class='group-4'>
+                        <div class='group-inner'>
+                            <p>Intake</p>
+                            <div data-address='/dashboard/intake' class='widget-indicator'></div>
+                        </div>
+                        <div class='group-inner'>
+                            <p>Lift</p>
+                            <div data-address='/dashboard/lift' class='widget-indicator'></div>
+                        </div>
+                        <div class='group-inner'>
+                            <p>Ready</p>
+                            <div data-address='/dashboard/ready' class='widget-boolean'></div>
+                        </div>
+                        <div class='group-inner'>
+                            <p>Fire</p>
+                            <div data-address='/dashboard/fire' class='widget-boolean'></div>
+                        </div>
+                    </div>
+                </div>
+                <div id='panel-column-2'>
+                    <div class='group-2'>
+                        <div class='group-inner'>
+                            <p>Shooter RPM Multipler</p>
+                            <input data-address='/vision/shootRPMAdjustment' type='number' class='widget-field' data-default='1'></input>
+                        </div>
+                        <div class='group-inner'>
+                            <p>Shooter Angle Adjustment</p>
+                            <input data-address='/vision/shootAngleAdjustment' type='number' class='widget-field' data-default='0'></input>
+                        </div>
+                    </div>
+                    <div class='group-2'>
+                        <div class='group-inner'>
+                            <p>Gear Detection Angle</p>
+                            <input data-address='/vision/gearElevatorAngle' type='number' class='widget-field'></input>
+                        </div>
+                        <div class='group-inner'>
+                            <p>Gear Lift Distance</p>
+                            <input data-address='/vision/gearDistance' type='number' class='widget-field'></input>
+                        </div>
+                    </div>
+                    <div class='group-2'>
+                        <div class='group-inner'>
+                            <p>Gear FPS</p>
+                            <input data-address='/vision/gearFPS' type='number' class='widget-field' data-default='0'></input>
+                        </div>
+                        <div class='group-inner'>
+                            <p>Shoot FPS</p>
+                            <input data-address='/vision/shootFPS' type='number' class='widget-field' data-default='0'></input>
+                        </div>
+                    </div>
                 </div>
             </div>
 

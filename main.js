@@ -79,6 +79,7 @@ function waitForServer() {
 app.on('ready', function() {
 	waitForServer();
 	global.powerBlocker = electron.powerSaveBlocker.start('prevent-display-sleep');
+	global.server = server;
 
 });
 

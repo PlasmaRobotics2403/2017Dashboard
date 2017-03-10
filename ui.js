@@ -25,10 +25,11 @@ Number.prototype.map = function (in_min, in_max, out_min, out_max) { // Map valu
 // Default Value Setting
 
 // Load Camera Module
-cameraURL = "url('http://roborio-2403-frc.local:1181/stream.mjpg')";
+cameraURL = "url('http://roborio-2403-frc.local:1182/stream.mjpg')";
 function reloadCamera() {
 	camera = $('#camera')
 	camera.css('background-image', 'none');
+	window.stop();
 	camera.css('background-image', cameraURL);
 }
 setTimeout(reloadCamera, 1000);
@@ -37,10 +38,12 @@ setTimeout(reloadCamera, 1000);
 // Interaction Hooks for Elements
 
 $('#bar-close').click(function() {
+	electron_remote.getGlobal('server').kill('SIGINT');
 	electron_app.quit();
 });
 
 $('#bar-reload').click(function() {
+	electron_remote.getGlobal('server').kill('SIGINT');
 	electron_app.relaunch();
 	electron_app.quit();
 });
@@ -116,7 +119,7 @@ setTimeout(function() { $('.widget-gauge').each(function() {
 		inner.css('width', '50%'); // Set Failure Width to 50%
 	} else {
 		var raw_position = parseFloat(network_value)
-		var percent_position = percent_position.map(parseFloat(bottom), parseFloat(top), 0, 100);
+		var percent_position = raw_position.map(parseFloat(bottom), parseFloat(top), 0, 100);
 
 		if (percent_position > 100) {
 			percent_position = 100;
@@ -164,6 +167,7 @@ setTimeout(function() { $('.widget-field').each(function() {
 	// Pull data about widget
 	var address = $(this).attr('data-address');
 	var type = $(this).attr('type');
+	var default_value = $(this).attr('data-default');
 
 	// Set placeholder to undefined in case of no value from Network Tables
 	$(this).attr('placeholder', 'undefined'); 
@@ -171,11 +175,52 @@ setTimeout(function() { $('.widget-field').each(function() {
 	// Get default NetworkTables value
 	var network_value = NetworkTables.getValue(address);
 
+	// Check for Boolean Strings in Network Tables Values and Default Value
+	if (network_value == 'true') { 
+		network_value = true; 
+	} else if (network_value == 'false') {
+		network_value = false;
+	}
+
+	if (default_value == 'true') { 
+		default_value = true; 
+	} else if (default_value == 'false') {
+		default_value = false;
+	}
+
 	// Set inital value of field based on Network Tables value
 	if (type === 'number') {
 		$(this).val(parseFloat(network_value));
+	} else if (type === 'checkbox') {
+		if (network_value === true || network_value === false) {
+			$(this).prop('checked', network_value)
+		}
 	} else {
 		$(this).val(network_value);
+	}
+
+	if (network_value === undefined && default_value != undefined) {
+		if (type === 'number') {
+			$(this).val(parseFloat(default_value));
+		} else if (type === 'checkbox') {
+			if (default_value === true || default_value === false) {
+				$(this).prop('checked', network_value)
+			}
+		} else {
+			$(this).val(network_value);
+		}
+
+		switch(type) {
+			case 'checkbox':
+				NetworkTables.setValue(address, String(default_value));
+				break;
+			case 'number':
+				NetworkTables.setValue(address, String(default_value));
+				break;
+			case 'text':
+				NetworkTables.setValue(address, String(default_value));
+				break;
+		}
 	}
 
 	// Assemble Widget Data Array
@@ -186,11 +231,111 @@ setTimeout(function() { $('.widget-field').each(function() {
 	}
 
 	// Push widget to Widget Array
-	if (!(address === undefined) && (type === 'text' || type === 'number')) {
+	if (!(address === undefined) && (type === 'text' || type === 'number' || type === 'checkbox')) {
+		widgets[address] = data;
+	}
+
+	// Bind event to push values to Network Tables on update
+	$(this).change(function() {
+		input_type = $(this).attr('type')
+		address = $(this).attr('data-address')
+
+		switch(input_type) {
+			case 'checkbox':
+				NetworkTables.setValue(address, String($(this).prop('checked')));
+				break;
+			case 'number':
+				NetworkTables.setValue(address, String($(this).val()));
+				break;
+			case 'text':
+				NetworkTables.setValue(address, String($(this).val()));
+				break;
+		}
+	});
+
+}); }, 250);
+
+setTimeout(function() { $('.widget-boolean').each(function() {
+
+	// Gather information about widget
+	var address = $(this).attr('data-address');
+
+	// Get default NetworkTables value
+	var network_value = NetworkTables.getValue(address);
+
+	// Assemble Widget Data Array
+	var data = {
+		object: $(this),
+		address: address,
+		type: 'boolean'
+	}
+
+	// Register click event to toggle Network Tables Value
+	$(this).click(function() {
+		address = $(this).attr('data-address');
+		network_value = NetworkTables.getValue(address);
+
+		if (network_value === 'true') {
+			NetworkTables.setValue(address, 'false');
+		} else {
+			NetworkTables.setValue(address, 'true');
+		}
+	})
+
+	// Push to Widget Array
+	if (address != undefined) {
 		widgets[address] = data;
 	}
 
 }); }, 250);
+
+
+// Handle Updates
+function updateWidget(key, value, search_string) {
+
+	search_key = search_string + key;
+
+	if (search_key in widgets) {
+		var widgetInformation = widgets[search_key];
+
+		switch(widgetInformation.type){
+			case 'gauge':
+				var raw_position = parseFloat(value);
+				var percent_position = raw_position.map(widgetInformation.lower, widgetInformation.upper, 0, 100);
+				
+				if (percent_position > 100) {
+					percent_position = 100;
+				} else if (percent_position < 0) {
+					percent_position = 0;
+				}
+
+				widgetInformation.object.find('.widget-gauge-bar').css('width', percent_position + '%');
+				break;
+			
+			case 'field-number': 
+				widgetInformation.object.val(parseFloat(value));
+				break;
+
+			case 'field-text':
+				widgetInformation.object.val(String(value));
+				break;
+
+			case 'field-checkbox':
+				if (value === true || value === false) {
+					widgetInformation.object.prop('checked', value);
+				}
+				break;
+
+			case 'boolean':
+				if (value === true) {
+					widgetInformation.object.removeClass('true');
+				} else if (value === false) {
+					widgetInformation.object.addClass('true');
+				}
+				break;
+		}
+	}
+}
 
 
 // Network Tables 
@@ -295,88 +440,73 @@ function onKeyValueChanged(key, value, isNew) {
 
 
 		default:
-			if (key in widgets) {
-				var widgetInformation = widgets[key]
-
-				switch(widgetInformation.type){
-					case 'gauge':
-						var raw_position = parseFloat(value)
-						var percent_position = raw_position.map(widgetInformation.lower, widgetInformation.upper, 0, 100);
-						
-						if (percent_position > 100) {
-							percent_position = 100;
-						} else if (percent_position < 0) {
-							percent_position = 0;
-						}
-
-						widgetInformation.object.find('.widget-gauge-bar').css('width', percent_position + '%');
-						break;
-					
-					case 'field': 
-						
-						break;
-				}
-			}
+			updateWidget(key, value, '');
+			updateWidget(key, value, 'tuning-');
 	}
 
 	// Tuning - other network Tables values
-	id_name = 'val' + key.replaceAll('/', '-_-').replaceAll(' ', '_-_')
+	// REMOVE THIS: id_name = 'val' + key.replaceAll('/', '-_-').replaceAll(' ', '_-_')
 	if (isNew) {
-		if (key.substring(0,17) != '/CameraPublisher/'){
-			var div = document.createElement('div'); // Create container <div>
-			div.id = id_name; // Set container id to id_name variable based on NetworkTables path
-			document.getElementById('tuning-list').appendChild(div); // Append div to Tuning List
+		if (key.substring(0,17) != '/CameraPublisher/' && key.substring(0,12) != '/LiveWindow/') {
+			var container = $('<div></div>'); // Create container object for value tuning block
+			container.attr('data-address', key); // Set data-address of container to make it easier to find in the DOM for debugging purposes
 
-			var p = document.createElement('p'); // Create header <p>
-			p.innerHTML = key; // Fill header with NetworkTablesID
-			div.appendChild(p); // Append header to container
+			var header = $('<p></p>'); // Create header object, to place inside container
+			header.text(key); // Set content of header to match network tables key
+			container.append(header); // Append header to container
 
-			var input = document.createElement('input') // Create field <input>
-			input.name = id_name; // Set field name  to id_name variable
-			input.value = value; // Set field value to NetworkTables value
+			var input = $('<input></input>'); // Create Field object
+			input.attr('data-address', key); // Set data-address for consistancy with other fields throughout dashboard
+
+			// Type Variable
+			type = null;
 
 			// Determine type of input
-			if (value === true || value === false) { // Is it a boolean value?
-				input.type = 'checkbox';
-				input.checked = value; // value property doesn't work on checkboxes, we'll need to use the checked property instead
-			} else if (!isNaN(value)) { // Is the value not not a number? Great!
-				input.type = 'number';
-			} else { // Just use a text if there's no better manipulation method
-				input.type = 'text';
+			if (value === true || value === false) { // If: BOOLEAN
+				input.attr('type', 'checkbox');
+				input.prop('checked', value);
+				type = 'checkbox'
+			} else if (!isNaN(value)) { // If: NUMBER
+				input.attr('type', 'number');
+				input.val(parseFloat(value))
+				type = 'number'
+			} else { // If: TEXT or ANYTHING ELSE
+				input.attr('type', 'text')
+				input.val(value)
+				type = 'text'
 			}
 
-			// Create listener for input value being modified
-			input.onchange = function() {
-				switch (input.type) { // Figure out how to pass data based on data type
+			container.append(input);
+			$('#tuning-list').append(container);
+
+			input.change(function() {
+				input_type = input.attr('type')
+				address = input.attr('data-address')
+
+				switch(input_type) {
 					case 'checkbox':
-						// For booleans, send bool of whether or not checkbox is checked
-						NetworkTables.setValue(key, input.checked);
+						NetworkTables.setValue(address, String(input.prop('checked')));
 						break;
 					case 'number':
-						// For number values, send value of input as an int.
-						NetworkTables.setValue(key, parseInt(input.value));
+						NetworkTables.setValue(address, String(input.val()));
 						break;
 					case 'text':
-						// For normal text values, just send the value.
-						NetworkTables.setValue(key, input.value);
+						NetworkTables.setValue(address, String(input.val()));
 						break;
 				}
+			});
+
+			// Assemble Widget Data Array
+			var data = {
+				object: input,
+				address: key,
+				type: 'field-' + type
 			}
 
-			div.appendChild(input) // Append field to container
-
-		}
-	} else {
-		var input = $('#' + id_name + ' > input')
-
-		if (input) {
-			if (input.type === 'checkbox') {
-				input.checked = value
-			} else {
-				input.value = value;
+			// Push widget to Widget Array
+			if (!(key === undefined) && (type === 'text' || type === 'number' || type === 'checkbox')) {
+				widgets['tuning-' + key] = data;
 			}
-		} else {
-			console.log('ERROR: Variable ' + key + ' not new, but not present in Tuning List.')
 		}
 	}
 }
