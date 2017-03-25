@@ -25,7 +25,7 @@ Number.prototype.map = function (in_min, in_max, out_min, out_max) { // Map valu
 // Default Value Setting
 
 // Load Camera Module
-cameraURL = "url('10.24.3.2:1181/stream.mjpg')";
+cameraURL = "url('http://10.24.3.2:1181/stream.mjpg')";
 function reloadCamera() {
 	camera = $('#camera')
 	camera.css('background-image', 'none');
@@ -159,6 +159,64 @@ setTimeout(function() { $('.widget-gauge').each(function() {
 	if (!(address === undefined)) {
 		widgets[address] = data;
 	}
+
+}); }, 250);
+
+// Radial Gauge (Spin) Widget
+setTimeout(function() { $('.widget-spin').each(function() {
+
+	// Pull data about widget
+	var address = $(this).attr('data-address');
+	var bottom = $(this).attr('data-bottom');
+	var top = $(this).attr('data-top');
+
+	// Fix Network Tables path if incorrectly formatted
+	if (!address.startsWith('/')) {
+		address = '/' + address;
+	}
+
+	// If top and bottom not defined, set at default values
+	if (bottom === undefined) {
+		bottom = -1;
+	}
+
+	if (top === undefined) {
+		top = 1;
+	}
+
+	// Get initial value of Network Tables Field
+	var network_value = NetworkTables.getValue(address);
+
+	// Initialize Content based on Network Tables Return
+	if (network_value === undefined) {
+		$(this).css('transform', 'rotateZ(0deg)'); // Set Failure Width to 50%
+	} else {
+		var raw_position = parseFloat(network_value)
+		var degree_position = raw_position.map(parseFloat(bottom), parseFloat(top), 0, 360);
+
+		if (degree_position > 360) {
+			degree_position = degree_position - 360;
+		} else if (degree_position < 0) {
+			degree_position = degree_position + 360;
+		}
+
+		$(this).css('transform', 'rotateZ(' + degree_position + 'deg)');
+	}
+
+	// Assemble Widget Data Array
+	var data = {
+		object: $(this),
+		address: address,
+		type: 'spin',
+		lower: parseFloat(bottom),
+		upper: parseFloat(top)
+	};
+
+	// Push widget to Widget Array
+	if (!(address === undefined)) {
+		widgets[address] = data;
+	}
+
 }); }, 250);
 
 // Field Widget
@@ -168,6 +226,11 @@ setTimeout(function() { $('.widget-field').each(function() {
 	var address = $(this).attr('data-address');
 	var type = $(this).attr('type');
 	var default_value = $(this).attr('data-default');
+
+	// Fix Network Tables path if incorrectly formatted
+	if (!address.startsWith('/')) {
+		address = '/' + address;
+	}
 
 	// Set placeholder to undefined in case of no value from Network Tables
 	$(this).attr('placeholder', 'undefined'); 
@@ -255,13 +318,28 @@ setTimeout(function() { $('.widget-field').each(function() {
 
 }); }, 250);
 
+// Boolean Indicator Widget
 setTimeout(function() { $('.widget-boolean').each(function() {
 
 	// Gather information about widget
 	var address = $(this).attr('data-address');
 
+	// Fix Network Tables path if incorrectly formatted
+	if (!address.startsWith('/')) {
+		address = '/' + address;
+	}
+
 	// Get default NetworkTables value
 	var network_value = NetworkTables.getValue(address);
+
+	if (network_value != undefined) {
+		if(String(network_value) === '1') {
+			$(this).addClass('true');
+		} else {
+			$(this).removeClass('true')
+			NetworkTables.setValue(address, 0);
+		}
+	}
 
 	// Assemble Widget Data Array
 	var data = {
@@ -275,12 +353,51 @@ setTimeout(function() { $('.widget-boolean').each(function() {
 		address = $(this).attr('data-address');
 		network_value = NetworkTables.getValue(address);
 
-		if (network_value === 'true') {
-			NetworkTables.setValue(address, 'false');
+		if (String(network_value) === '1') {
+			NetworkTables.setValue(address, 0);
 		} else {
-			NetworkTables.setValue(address, 'true');
+			NetworkTables.setValue(address, 1);
 		}
 	})
+
+	// Push to Widget Array
+	if (address != undefined) {
+		widgets[address] = data;
+	}
+
+}); }, 250);
+
+// Tri-position indicaator widget
+setTimeout(function() { $('.widget-indicator').each(function() {
+
+	// Gather information about widget
+	var address = $(this).attr('data-address');
+
+	// Fix Network Tables path if incorrectly formatted
+	if (!address.startsWith('/')) {
+		address = '/' + address;
+	}
+
+	// Get default NetworkTables value
+	var network_value = NetworkTables.getValue(address);
+
+	if (network_value != undefined) {
+		if (String(network_value) === '1') {
+			$(this).addClass('true').removeClass('false');
+		} else if (String(network_value) === '-1'){
+			$(this).addClass('false').removeClass('true');
+		} else {
+			$(this).removeClass('true').removeClass('false');
+			NetworkTables.setValue(address, 0);
+		}
+	}
+
+	// Assemble Widget Data Array
+	var data = {
+		object: $(this),
+		address: address,
+		type: 'indicator'
+	}
 
 	// Push to Widget Array
 	if (address != undefined) {
@@ -311,6 +428,20 @@ function updateWidget(key, value, search_string) {
 
 				widgetInformation.object.find('.widget-gauge-bar').css('width', percent_position + '%');
 				break;
+
+			case 'spin':
+				console.log('spinny');
+				var raw_position = parseFloat(value);
+				var degree_position = raw_position.map(widgetInformation.lower, widgetInformation.upper, 0, 360);
+
+				if (degree_position > 360) {
+					degree_position = degree_position - 360;
+				} else if (degree_position < 0) {
+					degree_position = degree_position + 360;
+				}
+
+				widgetInformation.object.css('transform', 'rotateZ(' + degree_position + 'deg)');
+				break;
 			
 			case 'field-number': 
 				widgetInformation.object.val(parseFloat(value));
@@ -327,10 +458,20 @@ function updateWidget(key, value, search_string) {
 				break;
 
 			case 'boolean':
-				if (value === true) {
-					widgetInformation.object.removeClass('true');
-				} else if (value === false) {
+				if (String(value) === '1') {
 					widgetInformation.object.addClass('true');
+				} else if (String(value) === '0') {
+					widgetInformation.object.removeClass('true');
+				}
+				break;
+
+			case 'indicator':
+				if (String(value) === '1') {
+					widgetInformation.object.addClass('true').removeClass('false');
+				} else if (String(value) === '-1') {
+					widgetInformation.object.addClass('false').removeClass('true');
+				} else if (String(value) === '0') {
+					widgetInformation.object.removeClass('false').removeClass('true');
 				}
 				break;
 		}
@@ -408,34 +549,6 @@ function onKeyValueChanged(key, value, isNew) {
 				s = 135;
 			}
 			NetworkTables.setValue(key, false);
-			break;
-
-
-		// Robot Data Output
-
-
-		// Gear Vision Angle
-		case '/vision/gearElevatorAngle':
-			break;
-		
-		
-		// Gear Vision Distance
-		case '/vision/gearElevatorDistance':
-			break;
-
-
-		// Shooter Angle
-		case '/vision/shooterAngle':
-			break;
-
-
-		// Shooter Distance
-		case '/vision/shooterDistance':
-			break;
-
-
-		// Shooter Velocity
-		case '/vision/shooterVelocity':
 			break;
 
 
